@@ -165,7 +165,133 @@ DB_HOST=127.0.0.1
 DB_PORT=3306
 DB_DATABASE=laravel_app
 DB_USERNAME=admin
+
 DB_PASSWORD=admin123
 ```
+## script
+```
+#!/bin/bash
 
+set -e
+
+echo "======================================"
+echo " Laravel + Apache2 Setup for Debian"
+echo "======================================"
+
+echo ""
+echo "[1/10] Checking OS..."
+cat /etc/os-release || true
+
+echo ""
+echo "[2/10] Updating package repository..."
+sudo apt update
+
+echo ""
+echo "[3/10] Upgrading installed packages..."
+sudo apt upgrade -y
+
+echo ""
+echo "[4/10] Installing Apache2..."
+sudo apt install apache2 -y
+
+echo ""
+echo "[5/10] Installing PHP and Laravel extensions..."
+sudo apt install \
+  php \
+  php-cli \
+  php-common \
+  php-mysql \
+  php-mbstring \
+  php-xml \
+  php-curl \
+  php-zip \
+  php-bcmath \
+  libapache2-mod-php \
+  -y
+
+echo ""
+echo "[6/10] Installing Composer, Git, Curl, Unzip..."
+sudo apt install composer git curl unzip ca-certificates gnupg lsb-release -y
+
+echo ""
+echo "[7/10] Installing database server..."
+sudo apt install default-mysql-server default-mysql-client -y
+
+echo ""
+echo "[8/10] Installing Node.js and npm..."
+sudo apt install nodejs npm -y
+
+echo ""
+echo "[9/10] Starting and enabling services..."
+sudo systemctl start apache2
+sudo systemctl enable apache2
+
+sudo systemctl start mariadb || sudo systemctl start mysql
+sudo systemctl enable mariadb || sudo systemctl enable mysql
+
+echo ""
+echo "[10/10] Enabling Apache rewrite module..."
+sudo a2enmod rewrite
+
+echo ""
+echo "Restarting Apache..."
+sudo systemctl restart apache2
+
+echo ""
+echo "======================================"
+echo " Version Checks"
+echo "======================================"
+
+echo ""
+echo "Apache version:"
+apache2 -v || true
+
+echo ""
+echo "PHP version:"
+php -v || true
+
+echo ""
+echo "PHP modules:"
+php -m | grep -E "PDO|pdo_mysql|mbstring|openssl|tokenizer|xml|ctype|json|curl|fileinfo|zip" || true
+
+echo ""
+echo "Composer version:"
+composer --version || true
+
+echo ""
+echo "Node.js version:"
+node -v || true
+
+echo ""
+echo "npm version:"
+npm -v || true
+
+echo ""
+echo "Database version:"
+mariadb --version || mysql --version || true
+
+echo ""
+echo "Apache loaded PHP module:"
+apache2ctl -M | grep php || echo "WARNING: PHP module not detected in Apache"
+
+echo ""
+echo "Apache status:"
+systemctl is-active apache2 || true
+
+echo ""
+echo "Database status:"
+systemctl is-active mariadb || systemctl is-active mysql || true
+
+echo ""
+echo "======================================"
+echo " Setup finished."
+echo " Next manual steps:"
+echo " 1. Clone phone-book project"
+echo " 2. Create phone_book database"
+echo " 3. Configure Laravel .env"
+echo " 4. Run composer install and npm install"
+echo " 5. Run migration and build assets"
+echo " 6. Configure Apache virtual host"
+echo "======================================"
+```
 Make sure the database exists and the PHP MySQL extension is installed before running migrations.
